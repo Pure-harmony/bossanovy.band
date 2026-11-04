@@ -147,6 +147,18 @@
     body{padding-bottom:72px}
   }
   @media (max-width:480px){.pill{padding:16px}.pill .val{font-size:1rem}}
+  /* video modal */
+  .vm{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.86);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+  .vm.open{display:flex}
+  .vm-box{width:min(1000px,100%);position:relative}
+  .vm-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.8)}
+  .vm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vm-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;color:var(--white)}
+  .vm-title{font-family:var(--head);font-weight:600;font-size:1.05rem}
+  .vm-src{color:var(--cyan);font-size:.9rem;white-space:nowrap}
+  .vm-close{position:absolute;top:-48px;right:0;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:1.4rem;cursor:pointer}
+  .vm-close:hover{background:var(--pink)}
+  @media (max-width:600px){.vm{padding:12px}.vm-frame{border-radius:12px}.vm-bar{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -287,14 +299,44 @@
 <footer>
   <div class="wrap">
     <span>© <span id="yr"></span> Bossanovy Band</span>
-    <span><a href="https://www.tiktok.com/search?q=bossanovy" target="_blank" rel="noopener">TikTok</a> · <a href="https://bossanovy.my.canva.site/band" target="_blank" rel="noopener">เว็บไซต์หลักของวง →</a></span>
   </div>
 </footer>
 
 <a href="tel:0642956592" class="btn mcta">โทรจองวง 064 295 6592</a>
 
+<div class="vm" id="vm" role="dialog" aria-modal="true" aria-label="เล่นคลิป">
+  <div class="vm-box">
+    <button class="vm-close" id="vm-close" aria-label="ปิด">×</button>
+    <div class="vm-frame" id="vm-frame"></div>
+    <div class="vm-bar"><div class="vm-title" id="vm-title"></div><a class="vm-src" id="vm-src" target="_blank" rel="noopener">เปิดที่ต้นทาง ↗</a></div>
+  </div>
+</div>
+
 <script>
   document.getElementById("yr").textContent = new Date().getFullYear();
+  // เปิดคลิปในหน้าเดียวกัน (YouTube / Facebook)
+  const vm=document.getElementById("vm"), frame=document.getElementById("vm-frame");
+  function embedUrl(u){
+    const yt=u.match(/(?:youtu\.be\/|v=)([\w-]{11})/);
+    if(yt) return "https://www.youtube-nocookie.com/embed/"+yt[1]+"?autoplay=1&rel=0&playsinline=1";
+    if(/facebook\.com/.test(u)) return "https://www.facebook.com/plugins/video.php?autoplay=true&show_text=false&href="+encodeURIComponent(u);
+    return null;
+  }
+  function closeVM(){vm.classList.remove("open");frame.innerHTML="";document.body.style.overflow="";}
+  document.querySelectorAll("a.card").forEach(a=>{
+    a.addEventListener("click",e=>{
+      const src=embedUrl(a.href); if(!src) return;
+      e.preventDefault();
+      frame.innerHTML='<iframe src="'+src+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+      document.getElementById("vm-title").textContent=a.querySelector("h3").textContent;
+      document.getElementById("vm-src").href=a.href;
+      document.getElementById("vm-src").textContent=/facebook/.test(a.href)?"เปิดใน Facebook ↗":"เปิดใน YouTube ↗";
+      vm.classList.add("open");document.body.style.overflow="hidden";
+    });
+  });
+  document.getElementById("vm-close").onclick=closeVM;
+  vm.addEventListener("click",e=>{if(e.target===vm)closeVM();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeVM();});
 </script>
 </body>
 </html>
