@@ -318,6 +318,7 @@
   function embedUrl(u){
     const yt=u.match(/(?:youtu\.be\/|v=)([\w-]{11})/);
     if(yt) return "https://www.youtube-nocookie.com/embed/"+yt[1]+"?autoplay=1&rel=0&playsinline=1";
+    if(/facebook\.com\/share\//.test(u)) return null; // ลิงก์แชร์แบบสั้นฝังเล่นไม่ได้ → เปิดแท็บใหม่แทน
     if(/facebook\.com/.test(u)) return "https://www.facebook.com/plugins/video.php?autoplay=true&show_text=false&href="+encodeURIComponent(u);
     return null;
   }
